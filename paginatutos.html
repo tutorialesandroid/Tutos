@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutoriales Android - Videos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    h1 {
+      background-color: #ff5722;
+      padding: 20px;
+      margin: 0;
+    }
+    /* Top Bar y Buscador */
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: #1e1e1e;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background-color: #ff0000;
+      color: #fff;
+      padding: 10px 15px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn:hover {
+      background-color: #cc0000;
+    }
+    .btn img {
+      width: 20px;
+    }
+    .search-container {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      max-width: 500px;
+      margin: 10px auto;
+    }
+    #search-bar {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+    }
+    .search-btn {
+      background-color: #ff5722;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .search-btn:hover {
+      background-color: #e64a19;
+    }
+    /* Resultados de búsqueda: se muestran debajo del top-bar */
+    #search-results {
+      display: none;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 10px;
+      margin: 0 auto 20px auto;
+      max-width: 100%;
+      /* Para forzar que quepan 3 por vista, cada video ocupará 32% aproximadamente */
+    }
+    /* Contenedor principal (videos recientes y categorías) */
+    #container {
+      padding: 0 10px 20px 10px;
+    }
+    #back-btn {
+      display: none;
+      background-color: #ff5722;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    #back-btn:hover {
+      background-color: #e64a19;
+    }
+    .category-title {
+      background-color: #333;
+      padding: 10px;
+      cursor: pointer;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+    /* Uso de contenedores horizontales para videos (3 por vista) */
+    .videos {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 10px 0;
+    }
+    .video {
+      flex: 0 0 calc(33.33% - 10px);
+      max-width: calc(33.33% - 10px);
+      background: #1e1e1e;
+      padding: 5px;
+      border-radius: 8px;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .video:hover {
+      transform: scale(1.05);
+    }
+    .thumbnail {
+      width: 100%;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .title {
+      font-size: 14px;
+      margin: 5px 0;
+    }
+    /* Botón para volver arriba */
+    #back-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #ff5722;
+      color: #fff;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    #back-to-top:hover {
+      background-color: #e64a19;
+    }
+    /* Modal para previsualización de video */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+    .modal-content {
+      background-color: #121212;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 800px;
+      border-radius: 10px;
+      position: relative;
+    }
+    .close {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+      color: #fff;
+    }
+    #video-iframe {
+      width: 80%;
+      height: 450px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tutoriales Android - Todos los Videos</h1>
+  <div id="top-bar">
+    <a href="https://youtube.com/@tutorialesandroid2021?sub_confirmation=1" class="btn" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_social_red_circle_%282017%29.svg" alt="YouTube" />
+      Suscribirse
+    </a>
+    <div class="search-container">
+      <input type="text" id="search-bar" placeholder="Buscar videos..." />
+      <button onclick="searchVideos()" class="search-btn">Buscar</button>
+      <button onclick="clearSearch()" class="search-btn">Limpiar</button>
+    </div>
+  </div>
+  <!-- Resultados de búsqueda se mostrarán aquí, justo debajo del top-bar -->
+  <div id="search-results"></div>
+  <!-- Contenido principal -->
+  <div id="container">
+    <button id="back-btn" onclick="resetSearch()">Volver a la vista principal</button>
+    <h2>&#128196; Videos Recientes</h2>
+    <div id="recent-videos" class="videos"></div>
+    <h2>&#127916; Categorías</h2>
+    <div id="categories"></div>
+  </div>
+  <div id="back-to-top" onclick="scrollToTop()">↑</div>
+  <!-- Modal para previsualización -->
+  <div id="video-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <iframe id="video-iframe" src="" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </div>
+  <script>
+    const API_KEY = "AIzaSyCGlXjqUP0f3WH5451Y0Cpt1bnyicOYa2E"; // Reemplaza TU_API_KEY por tu clave real
+    const CHANNEL_ID = "UCF1vKswqInlAEF1cGUrJqbw";
+    const categories = {};
+
+    async function fetchVideos(url) {
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.items || [];
+    }
+
+    async function loadRecentVideos() {
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CHANNEL_ID}&maxResults=3&order=date&type=video&key=${API_KEY}`;
+      const videos = await fetchVideos(url);
+      displayVideos(videos, document.getElementById("recent-videos"));
+    }
+
+    async function loadCategories() {
+      const url = `https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=${CHANNEL_ID}&maxResults=10&key=${API_KEY}`;
+      const playlists = await fetchVideos(url);
+      const container = document.getElementById("categories");
+
+      for (const playlist of playlists) {
+        const title = playlist.snippet.title;
+        const playlistId = playlist.id;
+
+        if (!categories[title]) {
+          categories[title] = await fetchVideos(
+            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${API_KEY}`
+          );
+        }
+
+        const categoryDiv = document.createElement("div");
+        categoryDiv.classList.add("category");
+
+        const categoryTitle = document.createElement("div");
+        categoryTitle.classList.add("category-title");
+        categoryTitle.innerText = title;
+        categoryTitle.onclick = () => toggleCategory(title);
+
+        const videoContainer = document.createElement("div");
+        videoContainer.classList.add("videos");
+        videoContainer.id = `category-${title}`;
+
+        categoryDiv.append(categoryTitle, videoContainer);
+        container.appendChild(categoryDiv);
+      }
+    }
+
+    function toggleCategory(category) {
+      const videosDiv = document.getElementById(`category-${category}`);
+      if (!videosDiv.style.display || videosDiv.style.display === "none") {
+        videosDiv.style.display = "flex";
+        displayVideos(categories[category], videosDiv);
+      } else {
+        videosDiv.style.display = "none";
+      }
+    }
+
+    async function searchVideos() {
+      const query = document.getElementById("search-bar").value.trim();
+      if (!query) return alert("Introduce un término de búsqueda.");
+      const resultsContainer = document.getElementById("search-results");
+      resultsContainer.style.display = "flex";
+      resultsContainer.innerHTML = "<p>Buscando videos...</p>";
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&channelId=${CHANNEL_ID}&maxResults=6&type=video&key=${API_KEY}`;
+      const videos = await fetchVideos(url);
+      displayVideos(videos, resultsContainer);
+    }
+
+    function clearSearch() {
+      document.getElementById("search-bar").value = "";
+      document.getElementById("search-results").innerHTML = "";
+      document.getElementById("search-results").style.display = "none";
+    }
+
+    // En este reset solo se limpian los resultados de búsqueda, sin ocultar el contenido principal
+    function resetSearch() {
+      clearSearch();
+      document.getElementById("back-btn").style.display = "none";
+    }
+
+    function displayVideos(videos, container) {
+      container.innerHTML = "";
+      videos.forEach(video => {
+        const videoId = video.id.videoId || video.snippet.resourceId.videoId;
+        const videoElement = document.createElement("div");
+        videoElement.classList.add("video");
+
+        const thumbnail = document.createElement("img");
+        thumbnail.src = video.snippet.thumbnails.medium.url;
+        thumbnail.classList.add("thumbnail");
+        thumbnail.onclick = () => openModal(videoId);
+
+        const videoTitle = document.createElement("div");
+        videoTitle.classList.add("title");
+        videoTitle.innerText = video.snippet.title;
+
+        videoElement.append(thumbnail, videoTitle);
+        container.appendChild(videoElement);
+      });
+    }
+
+    function openModal(videoId) {
+      document.getElementById("video-iframe").src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      document.getElementById("video-modal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("video-modal").style.display = "none";
+      document.getElementById("video-iframe").src = "";
+    }
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Cargar contenido inicial
+    loadRecentVideos();
+    loadCategories();
+  </script>
+</body>
+</html>
